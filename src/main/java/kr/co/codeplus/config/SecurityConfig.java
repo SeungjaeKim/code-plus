@@ -20,52 +20,52 @@ import java.util.stream.Collectors;
 
 import static kr.co.codeplus.domain.SocialType.*;
 
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception{
-        http.csrf().disable();
-        http.authorizeRequests()
-                .antMatchers("/", "/oauth2/**", "/login/**", "/css/**", "/js/**", "/images/**", "/console/**", "/favicon.ico/**")
+    public void configure(HttpSecurity httpSecurity) throws Exception {
+        httpSecurity.authorizeRequests()
+                .antMatchers("/", "/oauth2/**", "/login/**", "/css/**",
+                        "/images/**", "/js/**", "/console/**", "/favicon.ico/**")
                 .permitAll()
-                .antMatchers("/facebook").hasAnyAuthority(FACEBOOK.getRoleType())
-                .antMatchers("/google").hasAnyAuthority(GOOGLE.getRoleType())
-                .antMatchers("/kakao").hasAnyAuthority(KAKAO.getRoleType())
-                .antMatchers("/naver").hasAnyAuthority(NAVER.getRoleType())
-                .antMatchers("/github").hasAnyAuthority(GITHUB.getRoleType())
+                .antMatchers("/facebook").hasAuthority(FACEBOOK.getRoleType())
+                .antMatchers("/google").hasAuthority(GOOGLE.getRoleType())
+                .antMatchers("/kakao").hasAuthority(KAKAO.getRoleType())
+                .antMatchers("/naver").hasAuthority(NAVER.getRoleType())
                 .anyRequest().authenticated()
-            .and()
+                .and()
                 .oauth2Login()
-                .userInfoEndpoint()
-                .userService(new CustomOAuth2UserService()) // 네이버 userInfo의 응답을 처리하기 위한 설정
-            .and()
+                .userInfoEndpoint().userService(new CustomOAuth2UserService())  // 네이버 USER INFO의 응답을 처리하기 위한 설정
+                .and()
                 .defaultSuccessUrl("/loginSuccess")
                 .failureUrl("/loginFailure")
-            .and()
+                .and()
                 .exceptionHandling()
-                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
-        ;
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"));
     }
 
     @Bean
-    public ClientRegistrationRepository clientRegistrationRepository(OAuth2ClientProperties oAuth2ClientProperties
-            , @Value("${custom.oauth2.kakao.client-id}") String kakaoClientId
-            , @Value("${custom.oauth2.kakao.client-secret}") String kakaoClientSecret
-            , @Value("${custom.oauth2.naver.client-id}") String naverClientId
-            , @Value("${custom.oauth2.naver.client-secret}") String naverClientSecret) {
+    public ClientRegistrationRepository clientRegistrationRepository(
+            OAuth2ClientProperties oAuth2ClientProperties,
+            @Value("${custom.oauth2.kakao.client-id}") String kakaoClientId,
+            @Value("${custom.oauth2.kakao.client-secret}") String kakaoClientSecret,
+            @Value("${custom.oauth2.naver.client-id}") String naverClientId,
+            @Value("${custom.oauth2.naver.client-secret}") String naverClientSecret) {
         List<ClientRegistration> registrations = oAuth2ClientProperties
-                .getRegistration()
-                .keySet()
-                .stream()
+                .getRegistration().keySet().stream()
                 .map(client -> getRegistration(oAuth2ClientProperties, client))
-                .filter(Objects::nonNull) .collect(Collectors.toList());
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
         registrations.add(CustomOAuth2Provider.KAKAO.getBuilder("kakao")
                 .clientId(kakaoClientId)
                 .clientSecret(kakaoClientSecret)
                 .jwkSetUri("temp")
                 .build());
+
         registrations.add(CustomOAuth2Provider.NAVER.getBuilder("naver")
                 .clientId(naverClientId)
                 .clientSecret(naverClientSecret)
@@ -75,13 +75,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private ClientRegistration getRegistration(OAuth2ClientProperties clientProperties, String client) {
-
         if("google".equals(client)) {
             OAuth2ClientProperties.Registration registration = clientProperties.getRegistration().get("google");
             return CommonOAuth2Provider.GOOGLE.getBuilder(client)
                     .clientId(registration.getClientId())
                     .clientSecret(registration.getClientSecret())
-                    .scope("email", "profile") .build();
+                    .scope("email", "profile")
+                    .build();
         }
 
         if("facebook".equals(client)) {
@@ -90,21 +90,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .clientId(registration.getClientId())
                     .clientSecret(registration.getClientSecret())
                     .userInfoUri("https://graph.facebook.com/me?fields=id,name,email,link")
-                    .scope("email") .build();
-        }
-        if("github".equals(client)) {
-            OAuth2ClientProperties.Registration registration = clientProperties.getRegistration().get("github");
-            return CommonOAuth2Provider.GITHUB.getBuilder(client)
-                    .clientId(registration.getClientId())
-                    .clientSecret(registration.getClientSecret())
-                    .userInfoUri("https://graph.facebook.com/me?fields=id,name,email,link")
-                    .scope("email") .build();
+                    .scope("email")
+                    .build();
         }
 
         return null;
     }
-
-
-
-
 }
+
