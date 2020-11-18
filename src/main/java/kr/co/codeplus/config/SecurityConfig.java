@@ -34,6 +34,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/google").hasAnyAuthority(GOOGLE.getRoleType())
                 .antMatchers("/kakao").hasAnyAuthority(KAKAO.getRoleType())
                 .antMatchers("/naver").hasAnyAuthority(NAVER.getRoleType())
+                .antMatchers("/github").hasAnyAuthority(GITHUB.getRoleType())
                 .anyRequest().authenticated()
             .and()
                 .oauth2Login()
@@ -86,6 +87,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         if("facebook".equals(client)) {
             OAuth2ClientProperties.Registration registration = clientProperties.getRegistration().get("facebook");
             return CommonOAuth2Provider.FACEBOOK.getBuilder(client)
+                    .clientId(registration.getClientId())
+                    .clientSecret(registration.getClientSecret())
+                    .userInfoUri("https://graph.facebook.com/me?fields=id,name,email,link")
+                    .scope("email") .build();
+        }
+        if("github".equals(client)) {
+            OAuth2ClientProperties.Registration registration = clientProperties.getRegistration().get("github");
+            return CommonOAuth2Provider.GITHUB.getBuilder(client)
                     .clientId(registration.getClientId())
                     .clientSecret(registration.getClientSecret())
                     .userInfoUri("https://graph.facebook.com/me?fields=id,name,email,link")

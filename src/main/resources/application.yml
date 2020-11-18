@@ -21,6 +21,9 @@ spring:
 #          facebook:
 #            clientId:
 #            clientSecret:
+#          github:
+#            clientId:
+#            clientSecret:
 #
 #
 #custom:
