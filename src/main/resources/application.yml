@@ -1,0 +1,33 @@
+server:
+  port: 8080
+
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /console
+
+  security:
+    user:
+      name: test
+      password: 1234
+#
+#    oauth2:
+#      client:
+#        registration:
+#          google:
+#            clientId:
+#            clientSecret:
+#          facebook:
+#            clientId:
+#            clientSecret:
+#
+#
+#custom:
+#  oauth2:
+#    kakao:
+#      clientId:
+#      clientSecret:
+#    naver:
+#      clientId:
+#      clientSecret:
